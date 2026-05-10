@@ -2,8 +2,15 @@ import threading
 import asyncio
 import hashlib
 import sqlite3
-import tkinter as tk
-from tkinter import scrolledtext, messagebox
+try:
+    import tkinter as tk
+    from tkinter import scrolledtext, messagebox
+except ImportError:
+    # Если мы на сервере, где нет Tkinter, создаем "пустышки", чтобы код не падал
+    tk = None
+    messagebox = None
+    print("Tkinter не найден. Работа в режиме сервера.")
+
 import os
 from pywebio import start_server
 from pywebio.input import *
@@ -234,6 +241,11 @@ async def web_main():
 
 # --- 3. АДМИНКА ---
 def run_tk_window():
+    if tk is None: # Если Tkinter не загрузился, просто выходим
+        return
+    root = tk.Tk()
+    # ... остальной код твоей админки ...
+
     root = tk.Tk(); root.title("ADMIN PANEL"); root.geometry("600x600")
     top = tk.Frame(root); top.pack(fill='x', pady=5)
     users_list_gui = tk.Listbox(root, font=("Arial", 12)); users_list_gui.pack(fill='both', expand=True, padx=10)
@@ -254,5 +266,12 @@ def run_tk_window():
     refresh(); root.mainloop()
 
 if __name__ == "__main__":
-    init_db(); threading.Thread(target=run_tk_window, daemon=True).start()
-    start_server(web_main, port=8080, host='0.0.0.0')
+    init_db()
+    # Запускаем админку только если мы дома. В облаке Tkinter не сработает!
+    if os.environ.get('RENDER') is None:
+        threading.Thread(target=run_tk_window, daemon=True).start()
+    
+    # Порт для Render
+    port = int(os.environ.get("PORT", 8080))
+    start_server(web_main, port=port, host='0.0.0.0')
+
