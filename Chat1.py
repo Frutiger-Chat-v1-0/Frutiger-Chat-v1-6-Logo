@@ -254,7 +254,7 @@ async def web_main():
                         if user_role in ['admin', 'mod'] or n == nickname:
                             put_button("удалить", onclick=lambda m=mid: [delete_msg_logic(m), toast("Удалено")], small=True, outline=True).style('color:red; border:none;')
                 last_count = len(msgs); force_update = False; run_js("window.scrollTo(0, document.body.scrollHeight);")
-            await asyncio.sleep(2)
+            await asyncio.sleep(2.0)
 
     change_chat("Общий чат"); run_async(update_loop()); await asyncio.Event().wait()
 
